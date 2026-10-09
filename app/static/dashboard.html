@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Enumerator — Overview</title><link rel="stylesheet" href="/static/dashboard.css"></head>
+<body><div class="shell"><aside class="sidebar"><div class="brand"><div class="brand-mark">AI</div><div><div class="brand-title">AI Enumerator</div><div class="brand-subtitle">GenAI Exposure Intelligence</div></div></div>
+<nav>
+<a class="active" href="/dashboard">Overview</a>
+<a class="" href="/exposure">Exposure</a>
+<a class="" href="/assessment">Assessment</a>
+<a class="" href="/intelligence">Intelligence</a>
+</nav>
+<div class="side-footer"><span class="status-dot"></span>Exposure Intelligence Online</div></aside>
+<main><header class="topbar"><div><div class="eyebrow">EXECUTIVE SECURITY OVERVIEW</div><h1>GenAI Exposure Overview</h1><p>Current GenAI egress exposure, intelligence coverage and assessment posture.</p></div><div class="toolbar"><button id="refresh">Refresh</button></div></header>
+<div id="statusStrip" class="section-status"></div>
+<div class="section-status"><strong>Data sources:</strong> live probe measurements · curated intelligence catalog · derived exposure assessment</div>
+      <section id="overview" class="cards"></section>
+<section class="grid two"><article class="panel"><div class="panel-head"><div><h2>Exposure by Category</h2><p>Current measured reachability by GenAI service class</p></div></div><div id="categories"></div></article><article class="panel"><div class="panel-head"><div><h2>Top Exposed Vendors</h2><p>Reachable or partially reachable endpoints</p></div></div><div class="table-wrap"><table id="vendorsTable"></table></div></article></section>
+<section class="grid two"><article class="panel"><div class="panel-head"><div><h2>Key Findings</h2><p>Management-level findings from the latest live scan</p></div></div><div id="findings"></div></article><article class="panel"><div class="panel-head"><div><h2>Intelligence Coverage</h2><p>Catalog quality and analyst review state</p></div></div><div id="intel"></div></article></section>
+<section class="panel"><div class="panel-head"><div><h2>Core Capabilities</h2><p>AI Enumerator v1.0 community core</p></div></div><div class="capability-grid"><div class="capability"><h3>Intelligence Catalog</h3><p>Curated and collected GenAI domains with vendor attribution, category and confidence.</p></div><div class="capability"><h3>Egress Validation</h3><p>DNS, TCP, TLS and HTTP evidence from the selected probe location.</p></div><div class="capability"><h3>Historical Assessment</h3><p>Exposure scoring, scan history, change detection and network/probe comparison.</p></div><div class="capability"><h3>Policy Simulation</h3><p>Estimate the effect of allow, monitor and block decisions before applying network controls.</p></div></div></section>
+</main></div><script src="/static/dashboard.js"></script></body></html>

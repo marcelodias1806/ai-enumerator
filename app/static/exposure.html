@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Enumerator — Exposure</title><link rel="stylesheet" href="/static/dashboard.css"></head><body><div class="shell"><aside class="sidebar"><div class="brand"><div class="brand-mark">AI</div><div><div class="brand-title">AI Enumerator</div><div class="brand-subtitle">Exposure Intelligence</div></div></div>
+<nav>
+<a class="" href="/dashboard">Overview</a>
+<a class="active" href="/exposure">Exposure</a>
+<a class="" href="/assessment">Assessment</a>
+<a class="" href="/intelligence">Intelligence</a>
+</nav>
+<div class="side-footer"><span class="status-dot"></span>Exposure Engine Ready</div></aside><main><header class="topbar"><div><div class="eyebrow">LIVE EGRESS INTELLIGENCE</div><h1>AI Egress Exposure</h1><p>Which GenAI services are reachable from this network right now?</p></div><div class="toolbar"><button id="runScan">Run Server Scan</button><button id="refresh">Refresh</button></div></header>
+<div class="section-status"><strong>Measurement logic:</strong> DNS → TCP/443 → TLS → HTTP HEAD &nbsp;|&nbsp; <strong>Reachable</strong> = HTTP responded &nbsp;|&nbsp; <strong>Partial</strong> = transport reachable, HTTP incomplete.</div>
+<section id="cards" class="cards"></section><section id="specialized" class="cards"></section>
+
+<section class="grid two"><article class="panel"><div class="panel-head"><div><h2>Exposure by Category</h2><p>Reachability by GenAI service class</p></div></div><div id="categories"></div></article><article class="panel"><div class="panel-head"><div><h2>Exposure by Vendor</h2><p>Current reachable or partial endpoints</p></div></div><div id="vendors"></div></article></section>
+<section class="panel"><div class="panel-head"><div><h2>Latest Scan Results</h2><p>Technical evidence for each tested destination</p></div><div class="toolbar"><input id="search" placeholder="Search destination/vendor"><select id="status"><option value="">All statuses</option><option>reachable</option><option>partial</option><option>blocked</option><option>failed</option></select><select id="category"><option value="">All categories</option></select></div></div><div class="table-wrap"><table id="results"></table></div></section>
+<section class="panel"><div class="panel-head"><div><h2>Policy Simulation</h2><p>Estimate control impact without changing a firewall</p></div><button id="simulate">Simulate Suggested Policy</button></div><div id="policy"></div></section></main></div><script src="/static/exposure.js"></script></body></html>
