@@ -18,7 +18,7 @@ from app.services.assessment import exposure_score, scan_history, scan_changes, 
 from app.services.executive import executive_overview
 from app.security import authenticate, create_access_token, hash_password, COOKIE_NAME, require_viewer, require_analyst, require_admin, require_feed_token, current_user
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 app = FastAPI(title="AI Enumerator", version=VERSION)
 BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=BASE_DIR/"static"), name="static")
