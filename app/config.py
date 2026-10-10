@@ -13,6 +13,9 @@ class Settings(BaseSettings):
 
     feed_token: str = "change-this-feed-token"
 
+    intelligence_auto_enumerate: bool = True
+    intelligence_enumerate_interval_seconds: int = 86400
+
     exposure_http_timeout: int = 6
     exposure_tcp_timeout: int = 3
     exposure_max_targets: int = 500
