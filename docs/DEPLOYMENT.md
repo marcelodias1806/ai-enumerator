@@ -7,29 +7,39 @@
 - outbound DNS and HTTPS from the deployment network
 - a modern browser
 
-## Clone
+## Clone and configure
 
 ```bash
 git clone https://github.com/marcelodias1806/ai-enumerator.git
 cd ai-enumerator
-```
-
-## Configure
-
-```bash
 cp .env.example .env
 nano .env
 ```
 
-At minimum replace the database password, JWT secret, bootstrap admin password and feed token.
+Set a strong `POSTGRES_PASSWORD` and use the same password in `DATABASE_URL`.
 
-For an HTTPS deployment, review `AUTH_COOKIE_SECURE` and place the application behind a TLS-enabled reverse proxy.
+If port 8080 is occupied, set for example:
+
+```env
+AI_ENUMERATOR_BIND=127.0.0.1
+AI_ENUMERATOR_PORT=8081
+```
+
+The container still listens on 8080 internally; only the host-side port changes.
 
 ## Build and start
 
 ```bash
 docker compose build --no-cache
 docker compose up -d
+```
+
+The migrate service performs three idempotent bootstrap operations:
+
+```text
+alembic upgrade head
+bootstrap admin
+load curated starter intelligence
 ```
 
 Check status:
@@ -59,25 +69,33 @@ Expected:
 0004_public_v1 (head)
 ```
 
-## Load starter intelligence
-
-```bash
-docker compose exec api python -m scripts.seed
-```
-
 ## Open
+
+Default:
 
 ```text
 http://localhost:8080/login
 ```
 
-Use the admin credentials configured in `.env`.
+If `AI_ENUMERATOR_PORT=8081`:
+
+```text
+http://localhost:8081/login
+```
 
 ## First scan
 
 Open **Exposure** and click **Run Server Scan**.
 
-The scan measures reachability from the network where the Docker host is running.
+## Enrichment
+
+Automatic enrichment is enabled by default. To force it immediately:
+
+```bash
+docker compose exec api python -m scripts.enrich
+```
+
+Review the resulting candidates in **Intelligence**, then run another scan.
 
 ## Logs
 
@@ -94,7 +112,7 @@ docker compose logs migrate --no-color
 docker compose down
 ```
 
-Do not use `docker compose down -v` unless you intentionally want to delete persistent volumes and database data.
+Do not use `docker compose down -v` unless you intentionally want to delete the database and Redis volumes.
 
 ## Upgrade
 
@@ -105,3 +123,5 @@ docker compose build --no-cache
 docker compose up -d
 docker compose run --rm migrate alembic current
 ```
+
+Preserve `.env` and volumes during normal upgrades.
