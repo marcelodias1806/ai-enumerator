@@ -3,14 +3,23 @@ from app.config import settings
 
 celery = Celery("ai_enumerator", broker=settings.redis_url, backend=settings.redis_url)
 celery.conf.beat_schedule = {
-    "enumerate-ai-sources-daily": {"task":"app.worker.enumerate_sources","schedule":86400.0},
-    "exposure-auto-scan": {"task":"app.worker.exposure_auto_scan","schedule":settings.exposure_auto_scan_interval_seconds},
+    "enumerate-ai-sources": {
+        "task": "app.worker.enumerate_sources",
+        "schedule": settings.intelligence_enumerate_interval_seconds,
+    },
+    "exposure-auto-scan": {
+        "task": "app.worker.exposure_auto_scan",
+        "schedule": settings.exposure_auto_scan_interval_seconds,
+    },
 }
 
 @celery.task(name="app.worker.enumerate_sources")
 def enumerate_sources():
+    if not settings.intelligence_auto_enumerate:
+        return {"status": "skipped", "reason": "INTELLIGENCE_AUTO_ENUMERATE=false"}
     from app.collectors.runner import run_sync
-    return run_sync()
+    result = run_sync()
+    return {"status": "ok", **result}
 
 @celery.task(name="app.worker.exposure_auto_scan")
 def exposure_auto_scan():
