@@ -9,14 +9,15 @@ AI Enumerator catalogs GenAI-related destinations and validates, from a real net
 ## What it does
 
 - GenAI intelligence catalog with vendor/category attribution and confidence
+- automatic intelligence enrichment from official vendor sources and Certificate Transparency
 - DNS, TCP/443, TLS and HTTP reachability evidence
 - AI API and model-distribution exposure views
-- Historical scans and change detection
-- Multi-probe / multi-network comparison
+- historical scans and change detection
+- multi-probe / multi-network comparison
 - AI Egress Exposure Score
-- Executive PDF and technical CSV reports
-- Policy simulation and generic allow/block text feeds
-- Local authentication with viewer, analyst and admin roles
+- executive PDF and technical CSV reports
+- policy simulation and generic allow/block text feeds
+- local authentication with viewer, analyst and admin roles
 
 ## Requirements
 
@@ -35,14 +36,23 @@ cd ai-enumerator
 cp .env.example .env
 ```
 
-Edit `.env` and replace every value marked as a default or placeholder. At minimum change:
+Edit `.env`. At minimum change the database password, JWT secret, bootstrap admin password and feed token. Keep `POSTGRES_PASSWORD` and the password embedded in `DATABASE_URL` identical.
+
+Example:
 
 ```env
+POSTGRES_PASSWORD=USE-A-STRONG-PASSWORD
 DATABASE_URL=postgresql+psycopg://ai_enum:USE-A-STRONG-PASSWORD@db:5432/ai_enum
 JWT_SECRET=USE-A-LONG-RANDOM-SECRET-AT-LEAST-32-BYTES
 BOOTSTRAP_ADMIN_USERNAME=admin
 BOOTSTRAP_ADMIN_PASSWORD=USE-A-STRONG-ADMIN-PASSWORD
 FEED_TOKEN=USE-A-LONG-RANDOM-TOKEN
+```
+
+If port 8080 is already in use:
+
+```env
+AI_ENUMERATOR_PORT=8081
 ```
 
 Build and start:
@@ -52,9 +62,16 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-Validate the database migration:
+First startup is zero-touch for the application data model:
+
+1. Alembic upgrades the schema.
+2. The bootstrap admin is created if missing.
+3. The curated starter intelligence catalog is loaded idempotently.
+
+Validate:
 
 ```bash
+docker compose ps -a
 docker compose run --rm migrate alembic current
 ```
 
@@ -64,29 +81,51 @@ Expected schema head:
 0004_public_v1 (head)
 ```
 
-Load the curated starter catalog:
-
-```bash
-docker compose exec api python -m scripts.seed
-```
-
 Open:
 
 ```text
 http://localhost:8080/login
 ```
 
-Log in with the credentials defined by `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD`.
+or the port selected with `AI_ENUMERATOR_PORT`.
 
 ## First scan
 
 1. Open **Exposure**.
 2. Click **Run Server Scan**.
 3. Wait for the scan to finish.
-4. Review **Reachable**, **Partial**, **Blocked** and **Failed** results.
+4. Review **Reachable**, **Partial**, **Blocked** and **Failed**.
 5. Open **Assessment** for score, history, comparison and report export.
 
-The server scan runs from the network location of the AI Enumerator container host. To compare other network segments, deploy additional probes from those locations.
+The server scan measures reachability from the network location of the AI Enumerator Docker host.
+
+## Intelligence enrichment
+
+The initial curated catalog is only the baseline. AI Enumerator continuously enriches it.
+
+Current collectors:
+
+- **Official/vendor-controlled documentation** — extracts vendor-related hostnames referenced by configured sources.
+- **Certificate Transparency** — discovers additional subdomains associated with configured vendor roots.
+
+Discovered candidates are ingested with evidence, deduplicated, and assigned attribution confidence. Automated discovery does **not** automatically create a blocking decision; newly discovered assets remain subject to review.
+
+Automatic enrichment is enabled by default and runs every 24 hours:
+
+```env
+INTELLIGENCE_AUTO_ENUMERATE=true
+INTELLIGENCE_ENUMERATE_INTERVAL_SECONDS=86400
+```
+
+Run enrichment manually:
+
+```bash
+docker compose exec api python -m scripts.enrich
+```
+
+Then review **Intelligence** and run another Exposure scan. As the intelligence catalog grows, subsequent scans test the expanded target set.
+
+See [Intelligence enrichment](docs/INTELLIGENCE.md) for the full data-flow, confidence and review model.
 
 ## Result semantics
 
@@ -97,7 +136,7 @@ The server scan runs from the network location of the AI Enumerator container ho
 | `blocked` | DNS resolved, but TCP connectivity was blocked/unavailable |
 | `failed` | DNS or another transport-stage error prevented useful reachability evidence |
 
-HTTP responses such as `401`, `403` or `404` can still prove egress reachability: the remote service answered the request even if the requested path was not authorized or did not exist.
+HTTP responses such as `401`, `403` or `404` can still prove egress reachability because the remote service answered.
 
 ## Main screens
 
@@ -112,25 +151,15 @@ HTTP responses such as `401`, `403` or `404` can still prove egress reachability
 - **Intelligence**: curated and collected destination catalog
 - **Assessment**: metrics derived from exposure + intelligence
 
-No demo activity data is required by the public v1 workflow.
+No demo activity data is required by the public workflow.
 
 ## Common operations
 
-Check services:
-
 ```bash
 docker compose ps -a
-```
-
-Follow API logs:
-
-```bash
 docker compose logs -f api
-```
-
-Follow migration logs:
-
-```bash
+docker compose logs -f worker
+docker compose logs -f beat
 docker compose logs migrate --no-color
 ```
 
@@ -140,7 +169,7 @@ Stop without deleting data:
 docker compose down
 ```
 
-Do **not** use `docker compose down -v` unless you intentionally want to delete persistent database data.
+Do **not** use `docker compose down -v` unless you intentionally want to delete persistent data.
 
 ## Upgrade
 
@@ -154,11 +183,10 @@ docker compose up -d
 docker compose run --rm migrate alembic current
 ```
 
-Never use `down -v` during a normal upgrade.
-
 ## Documentation
 
 - [Installation and deployment](docs/DEPLOYMENT.md)
+- [Intelligence enrichment](docs/INTELLIGENCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Scanning methodology](docs/SCANNING.md)
 - [Policy feeds and simulation](docs/POLICY.md)
@@ -171,11 +199,11 @@ Never use `down -v` during a normal upgrade.
 
 AI Enumerator performs controlled outbound validation against cataloged GenAI destinations. Review the scanner methodology before running it in a production network and follow your organization's authorization and change-management requirements.
 
-Never commit `.env`, credentials, database dumps, probe tokens or generated secrets to the repository.
+Never commit `.env`, credentials, database dumps, probe tokens or generated secrets.
 
 ## License
 
-The source is publicly available under the **AI Enumerator Community Source License 1.0**. It permits use and internal modification, and permits repository forks when used to contribute changes back to the official AI Enumerator project. It does not permit independent redistribution, rebranding, sublicensing, or commercial use without written permission.
+The source is publicly available under the **AI Enumerator Community Source License 1.0**. It permits use and internal modification, and permits repository forks when used to contribute changes back to the official project. It does not permit independent redistribution, rebranding, sublicensing, or commercial use without written permission.
 
 Because these restrictions go beyond OSI-approved open-source licenses, the project is accurately described as **source-available / community source**, not OSI Open Source.
 
